@@ -89,6 +89,8 @@ public abstract class Sprite extends Rectangle2D.Double implements Drawable, Mov
 		}
 	}
 	
+	public abstract boolean collidedWith(Sprite s);
+	
 	public void setLoop(int from, int to) {
 		loop_from = from;
 		loop_to = to;

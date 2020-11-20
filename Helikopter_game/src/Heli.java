@@ -31,5 +31,13 @@ public class Heli extends Sprite {
 			setDy(0);
 		}
 	}
+	
+	public boolean collidedWith(Sprite s) {
+		if(this.intersects(s)) {
+			System.out.println("Kollision Heli");
+			return true;
+		}
+		return false;
+	}
 
 }

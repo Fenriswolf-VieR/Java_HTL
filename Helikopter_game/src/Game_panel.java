@@ -29,7 +29,7 @@ public class Game_panel extends JPanel implements Runnable, KeyListener, ActionL
 	boolean down = false;
 	boolean left = false;
 	boolean right = false;
-	int speed = 100;
+	int speed = 70;
 
 	Timer timer;
 	BufferedImage[] rocket;
