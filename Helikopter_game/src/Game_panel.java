@@ -52,6 +52,10 @@ public class Game_panel extends JPanel implements Runnable, KeyListener, ActionL
 		frame.add(this);
 		frame.pack();
 		frame.setVisible(true);
+		
+		Timer fpsHelper = new Timer(1000, fpsTimer);
+		fpsHelper.restart();
+		
 		doInitializations();
 	}
 
@@ -70,13 +74,24 @@ public class Game_panel extends JPanel implements Runnable, KeyListener, ActionL
 
 		timer = new Timer(3000, this);
 		timer.restart();
-
+		
 		if (!once) {
 			Thread t = new Thread(this);
 			t.start();
 		}
 	}
-
+	
+	private ActionListener fpsTimer = new ActionListener() {
+		
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			
+			fps = frames;
+			frames = 0;
+			
+		}
+	};
+	
 	public void run() {
 
 		while (game_running) {
@@ -92,7 +107,7 @@ public class Game_panel extends JPanel implements Runnable, KeyListener, ActionL
 			repaint();
 
 			try {
-				Thread.sleep(0);
+				Thread.sleep(10);
 			} catch (InterruptedException e) {
 			}
 
@@ -184,7 +199,6 @@ public class Game_panel extends JPanel implements Runnable, KeyListener, ActionL
 		try {
 			delta = System.nanoTime() - last;
 			last = System.nanoTime();
-			fps = ((long) 1e9) / (delta);
 		} catch (ArithmeticException e) {
 		}
 	}
@@ -278,22 +292,17 @@ public class Game_panel extends JPanel implements Runnable, KeyListener, ActionL
 		this.started = started;
 	}
 
-	int i = 0;
+	long frames = 0;
 	
 	@Override
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
 
-		i++;
-		
+		frames++;
 		g.drawImage(background, 0, 0, getWidth(), getHeight(), this);
 
 		g.setColor(Color.red);
 		g.drawString("FPS: " + Long.toString(fps), 20, 10);
-
-		if (fps > 10000) {
-			System.out.println(fps);
-		}
 
 		if (!isStarted()) {
 			return;
@@ -312,5 +321,8 @@ public class Game_panel extends JPanel implements Runnable, KeyListener, ActionL
 		if (isStarted() && e.getSource().equals(timer)) {
 			createRocket();
 		}
+		
+		
+		
 	}
 }
