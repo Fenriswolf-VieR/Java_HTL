@@ -44,6 +44,8 @@ public class Game_panel extends JPanel implements Runnable, KeyListener, ActionL
 		new Game_panel(1920, 1080);
 	}
 
+	private boolean fullscreen = false;
+
 	public Game_panel(int w, int h) {
 		this.setPreferredSize(new Dimension(w, h));
 		this.setBackground(Color.cyan);
@@ -52,13 +54,18 @@ public class Game_panel extends JPanel implements Runnable, KeyListener, ActionL
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.addKeyListener(this);
 		frame.add(this);
+		if (fullscreen) {
+			frame.setUndecorated(true);
+			frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+			frame.setResizable(false);
+		}
 		frame.pack();
-		frame.setResizable(false);
+		frame.setLocationRelativeTo(null);
 		frame.setVisible(true);
-		
+
 		Timer fpsHelper = new Timer(1000, fpsTimer);
 		fpsHelper.restart();
-		
+
 		doInitializations();
 	}
 
@@ -77,24 +84,24 @@ public class Game_panel extends JPanel implements Runnable, KeyListener, ActionL
 
 		timer = new Timer(3000, this);
 		timer.restart();
-		
+
 		if (!once) {
 			Thread t = new Thread(this);
 			t.start();
 		}
 	}
-	
+
 	private ActionListener fpsTimer = new ActionListener() {
-		
+
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			
+
 			fps = frames;
 			frames = 0;
-			
+
 		}
 	};
-	
+
 	public void run() {
 
 		while (game_running) {
@@ -184,28 +191,28 @@ public class Game_panel extends JPanel implements Runnable, KeyListener, ActionL
 			}
 		}
 		// System.out.println(actors.size());
-		
+
 		for(int i = 0;i < actors.size();i++) {
 			for(int n = i+1; n<actors.size();n++) {
 				Sprite s1 = actors.elementAt(i);
 				Sprite s2 = actors.elementAt(n);
-				
+
 				s1.collidedWith(s2);
 			}
 		}
 
 		if (trash.size() > 0) {
-				actors.removeAll(trash);
-				trash.clear();
+			actors.removeAll(trash);
+			trash.clear();
 		}
-		
+
 		if(gameover>0) {
 			if(System.currentTimeMillis()-gameover>3000) {
 				stopGame();
 			}
 		}
 	}
-	
+
 	private void stopGame() {
 		timer.stop();
 		setStarted(false);
@@ -314,7 +321,7 @@ public class Game_panel extends JPanel implements Runnable, KeyListener, ActionL
 	}
 
 	long frames = 0;
-	
+
 	@Override
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
@@ -343,8 +350,8 @@ public class Game_panel extends JPanel implements Runnable, KeyListener, ActionL
 		if (isStarted() && e.getSource().equals(timer)) {
 			createRocket();
 		}
-		
-		
-		
+
+
+
 	}
 }
