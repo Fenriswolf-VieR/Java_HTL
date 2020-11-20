@@ -39,7 +39,7 @@ public class Game_panel extends JPanel implements Runnable, KeyListener, ActionL
 	Vector<Sprite> actors;
 
 	public static void main(String[] args) {
-		new Game_panel(800, 600);
+		new Game_panel(1920, 1080);
 	}
 
 	public Game_panel(int w, int h) {
@@ -51,6 +51,7 @@ public class Game_panel extends JPanel implements Runnable, KeyListener, ActionL
 		frame.addKeyListener(this);
 		frame.add(this);
 		frame.pack();
+		frame.setResizable(false);
 		frame.setVisible(true);
 		
 		Timer fpsHelper = new Timer(1000, fpsTimer);
