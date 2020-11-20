@@ -281,7 +281,7 @@ public class Game_panel extends JPanel implements Runnable, KeyListener, ActionL
 	public void paintComponent (Graphics g) {
 		super.paintComponent(g);
 		
-		g.drawImage(background, 0, 0, this);
+		g.drawImage(background, 0, 0, getWidth(), getHeight(), this);
 
 		//g.setColor(Color.red);
 		//g.drawString("FPS: "+ Long.toString(fps), 20, 10);
