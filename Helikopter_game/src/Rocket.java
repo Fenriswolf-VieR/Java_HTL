@@ -61,8 +61,17 @@ public class Rocket extends Sprite{
 	}
 
 	public boolean collidedWith(Sprite s) {
+		
+		if(remove) {
+			return false;
+		}
+		
 		if(this.intersects(s)) {
-			System.out.println("Kollision Heli");
+			if(s instanceof Heli) {
+				remove = true;
+				s.remove = true;
+			}
+			
 			return true;
 		}
 		return false;

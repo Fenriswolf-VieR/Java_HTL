@@ -24,6 +24,7 @@ public class Game_panel extends JPanel implements Runnable, KeyListener, ActionL
 	long delta = 0;
 	long last = 0;
 	long fps = 0;
+	long gameover = 0;
 
 	boolean up = false;
 	boolean down = false;
@@ -34,6 +35,7 @@ public class Game_panel extends JPanel implements Runnable, KeyListener, ActionL
 	Timer timer;
 	BufferedImage[] rocket;
 	BufferedImage background;
+	BufferedImage[] explosion;
 
 	Sprite copter;
 	Vector<Sprite> actors;
@@ -166,12 +168,31 @@ public class Game_panel extends JPanel implements Runnable, KeyListener, ActionL
 			}
 		}
 		// System.out.println(actors.size());
-
-		if (trash.size() > 0) {
-			for (Sprite s : trash) {
-				actors.remove(s);
+		
+		for(int i = 0;i < actors.size();i++) {
+			for(int n = i+1; n<actors.size();n++) {
+				Sprite s1 = actors.elementAt(i);
+				Sprite s2 = actors.elementAt(n);
+				
+				s1.collidedWith(s2);
 			}
 		}
+
+		if (trash.size() > 0) {
+				actors.removeAll(trash);
+				trash.clear();
+		}
+		
+		if(gameover>0) {
+			if(System.currentTimeMillis()-gameover>3000) {
+				stopGame();
+			}
+		}
+	}
+	
+	private void stopGame() {
+		timer.stop();
+		setStarted(false);
 	}
 
 	private void moveObjects() {
@@ -235,8 +256,7 @@ public class Game_panel extends JPanel implements Runnable, KeyListener, ActionL
 
 		if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
 			if (isStarted()) {
-				setStarted(false);
-				timer.stop();
+				stopGame();
 			} else {
 				setStarted(false);
 				System.exit(0);
