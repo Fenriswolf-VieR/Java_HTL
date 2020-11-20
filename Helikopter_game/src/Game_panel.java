@@ -30,7 +30,7 @@ public class Game_panel extends JPanel implements Runnable, KeyListener, ActionL
 	boolean left = false;
 	boolean right = false;
 	int speed = 100;
-	
+
 	Timer timer;
 	BufferedImage[] rocket;
 	BufferedImage background;
@@ -39,14 +39,14 @@ public class Game_panel extends JPanel implements Runnable, KeyListener, ActionL
 	Vector<Sprite> actors;
 
 	public static void main(String[] args) {
-		new Game_panel (800,600);
+		new Game_panel(800, 600);
 	}
 
 	public Game_panel(int w, int h) {
-		this.setPreferredSize(new Dimension(w,h));
+		this.setPreferredSize(new Dimension(w, h));
 		this.setBackground(Color.cyan);
 		JFrame frame = new JFrame("The Heli-game");
-		frame.setLocation(100,100);
+		frame.setLocation(100, 100);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.addKeyListener(this);
 		frame.add(this);
@@ -61,17 +61,17 @@ public class Game_panel extends JPanel implements Runnable, KeyListener, ActionL
 
 		actors = new Vector<Sprite>();
 		BufferedImage[] heli = this.loadPics("pics/heli.gif", 4);
-		rocket = loadPics("pics/rocket.gif",8);
-		background = loadPics("pics/background.jpg",1)[0];
-		copter = new Heli(heli,400,300,100,this);
+		rocket = loadPics("pics/rocket.gif", 8);
+		background = loadPics("pics/background.jpg", 1)[0];
+		copter = new Heli(heli, 400, 300, 100, this);
 		actors.add(copter);
 
 		createClouds();
-		
-		timer = new Timer (3000,this);
+
+		timer = new Timer(3000, this);
 		timer.restart();
 
-		if(!once) {
+		if (!once) {
 			Thread t = new Thread(this);
 			t.start();
 		}
@@ -79,11 +79,11 @@ public class Game_panel extends JPanel implements Runnable, KeyListener, ActionL
 
 	public void run() {
 
-		while(game_running) {
+		while (game_running) {
 
 			computeDelta();
 
-			if(isStarted()) {
+			if (isStarted()) {
 				checkKeys();
 				doLogic();
 				moveObjects();
@@ -92,24 +92,24 @@ public class Game_panel extends JPanel implements Runnable, KeyListener, ActionL
 			repaint();
 
 			try {
-				Thread.sleep(10);
-			} catch (InterruptedException e) {}
-
+				Thread.sleep(0);
+			} catch (InterruptedException e) {
+			}
 
 		}
 	}
 
 	private void createClouds() {
-		BufferedImage[] ci = this.loadPics("pics/cloud.gif",1);
+		BufferedImage[] ci = this.loadPics("pics/cloud.gif", 1);
 
-		for(int y=10;y<getHeight();y+=50) {
-			int x = (int) (Math.random()*getWidth());
-			Cloud cloud = new Cloud(ci,x,y,1000,this);
+		for (int y = 10; y < getHeight(); y += 50) {
+			int x = (int) (Math.random() * getWidth());
+			Cloud cloud = new Cloud(ci, x, y, 1000, this);
 			actors.add(cloud);
 		}
 	}
 
-	private BufferedImage[] loadPics(String path, int pics) { 
+	private BufferedImage[] loadPics(String path, int pics) {
 
 		BufferedImage[] anim = new BufferedImage[pics];
 		BufferedImage source = null;
@@ -118,10 +118,11 @@ public class Game_panel extends JPanel implements Runnable, KeyListener, ActionL
 
 		try {
 			source = ImageIO.read(pic_url);
-		}catch (IOException e) {}
+		} catch (IOException e) {
+		}
 
-		for(int x=0;x<pics;x++) {
-			anim[x] = source.getSubimage(x*source.getWidth()/pics,0,source.getWidth()/pics,source.getHeight());
+		for (int x = 0; x < pics; x++) {
+			anim[x] = source.getSubimage(x * source.getWidth() / pics, 0, source.getWidth() / pics, source.getHeight());
 		}
 
 		return anim;
@@ -129,111 +130,111 @@ public class Game_panel extends JPanel implements Runnable, KeyListener, ActionL
 
 	private void checkKeys() {
 
-		if(up) {
+		if (up) {
 			copter.setDy(-speed);
 		}
 
-		if(down) {
+		if (down) {
 			copter.setDy(speed);
 		}
 
-		if(right) {
+		if (right) {
 			copter.setDx(speed);
 		}
 
-		if(left) {
+		if (left) {
 			copter.setDx(-speed);
 		}
 
-		if(!up&&!down) {
+		if (!up && !down) {
 			copter.setDy(0);
 		}
 
-		if(!left&&!right) {
+		if (!left && !right) {
 			copter.setDx(0);
 		}
 	}
 
 	private void doLogic() {
-		
+
 		Vector<Sprite> trash = new Vector<Sprite>();
-		
-		for(Movable mov:actors) {
+		for (Movable mov : actors) {
 			mov.doLogic(delta);
-			Sprite check = (Sprite)mov;
-			if(check.remove) {
+			Sprite check = (Sprite) mov;
+			if (check.remove) {
 				trash.add(check);
 			}
 		}
-		//System.out.println(actors.size());
-		
-		if(trash.size()>0) {
-			for(Sprite s: trash) {
+		// System.out.println(actors.size());
+
+		if (trash.size() > 0) {
+			for (Sprite s : trash) {
 				actors.remove(s);
 			}
 		}
 	}
 
 	private void moveObjects() {
-		for(Movable mov:actors) {
+		for (Movable mov : actors) {
 			mov.move(delta);
 		}
 	}
 
 	private void computeDelta() {
-		try{
+		try {
 			delta = System.nanoTime() - last;
 			last = System.nanoTime();
-			fps = ((long) 1e9)/(delta+1);
-		}catch(ArithmeticException e) {}
+			fps = ((long) 1e9) / (delta);
+		} catch (ArithmeticException e) {
+		}
 	}
 
 	public void keyPressed(KeyEvent e) {
 
-		if(e.getKeyCode()==KeyEvent.VK_UP || e.getKeyCode()==KeyEvent.VK_W) {
+		if (e.getKeyCode() == KeyEvent.VK_UP || e.getKeyCode() == KeyEvent.VK_W) {
 			up = true;
 		}
 
-		if(e.getKeyCode()==KeyEvent.VK_LEFT || e.getKeyCode()==KeyEvent.VK_A) {
+		if (e.getKeyCode() == KeyEvent.VK_LEFT || e.getKeyCode() == KeyEvent.VK_A) {
 			left = true;
 		}
 
-		if(e.getKeyCode()==KeyEvent.VK_DOWN || e.getKeyCode()==KeyEvent.VK_S) {
+		if (e.getKeyCode() == KeyEvent.VK_DOWN || e.getKeyCode() == KeyEvent.VK_S) {
 			down = true;
 		}
 
-		if(e.getKeyCode()==KeyEvent.VK_RIGHT || e.getKeyCode()==KeyEvent.VK_D) {
+		if (e.getKeyCode() == KeyEvent.VK_RIGHT || e.getKeyCode() == KeyEvent.VK_D) {
 			right = true;
 		}
 	}
 
 	public void keyReleased(KeyEvent e) {
 
-		if(e.getKeyCode()==KeyEvent.VK_UP || e.getKeyCode()==KeyEvent.VK_W) {
+		if (e.getKeyCode() == KeyEvent.VK_UP || e.getKeyCode() == KeyEvent.VK_W) {
 			up = false;
 		}
 
-		if(e.getKeyCode()==KeyEvent.VK_LEFT || e.getKeyCode()==KeyEvent.VK_A) {
+		if (e.getKeyCode() == KeyEvent.VK_LEFT || e.getKeyCode() == KeyEvent.VK_A) {
 			left = false;
 		}
 
-		if(e.getKeyCode()==KeyEvent.VK_DOWN || e.getKeyCode()==KeyEvent.VK_S) {
+		if (e.getKeyCode() == KeyEvent.VK_DOWN || e.getKeyCode() == KeyEvent.VK_S) {
 			down = false;
 		}
 
-		if(e.getKeyCode()==KeyEvent.VK_RIGHT || e.getKeyCode()==KeyEvent.VK_D) {
+		if (e.getKeyCode() == KeyEvent.VK_RIGHT || e.getKeyCode() == KeyEvent.VK_D) {
 			right = false;
 		}
 
-		if(e.getKeyCode()==KeyEvent.VK_ENTER) {
-			if(!isStarted()) {
+		if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+			if (!isStarted()) {
 				doInitializations();
 				setStarted(true);
 			}
 		}
 
-		if(e.getKeyCode()==KeyEvent.VK_ESCAPE) {
-			if(isStarted()) {
+		if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+			if (isStarted()) {
 				setStarted(false);
 				timer.stop();
 			} else {
@@ -247,23 +248,23 @@ public class Game_panel extends JPanel implements Runnable, KeyListener, ActionL
 	public void keyTyped(KeyEvent e) {
 
 	}
-	
+
 	private void createRocket() {
-		
-		int x=0;
-		int y = (int)(Math.random()*getHeight());
-		int hori = (int)(Math.random()*2);
-		
-		if(hori==0) {
-			x= -30;
-		}else {
-			x = getWidth()+30;
+
+		int x = 0;
+		int y = (int) (Math.random() * getHeight());
+		int hori = (int) (Math.random() * 2);
+
+		if (hori == 0) {
+			x = -30;
+		} else {
+			x = getWidth() + 30;
 		}
-		
-		Rocket rock = new Rocket(rocket,x,y,100,this);
-		if(x<0) {
+
+		Rocket rock = new Rocket(rocket, x, y, 100, this);
+		if (x < 0) {
 			rock.setHorizontalSpeed(200);
-		}else {
+		} else {
 			rock.setHorizontalSpeed(-200);
 		}
 		actors.add(rock);
@@ -277,21 +278,29 @@ public class Game_panel extends JPanel implements Runnable, KeyListener, ActionL
 		this.started = started;
 	}
 
+	int i = 0;
+	
 	@Override
-	public void paintComponent (Graphics g) {
+	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
+
+		i++;
 		
 		g.drawImage(background, 0, 0, getWidth(), getHeight(), this);
 
-		//g.setColor(Color.red);
-		//g.drawString("FPS: "+ Long.toString(fps), 20, 10);
+		g.setColor(Color.red);
+		g.drawString("FPS: " + Long.toString(fps), 20, 10);
 
-		if(!isStarted()) {
+		if (fps > 10000) {
+			System.out.println(fps);
+		}
+
+		if (!isStarted()) {
 			return;
 		}
 
-		if(actors!=null) {
-			for(Drawable draw:actors) {
+		if (actors != null) {
+			for (Drawable draw : actors) {
 				draw.drawObjects(g);
 			}
 		}
@@ -299,8 +308,8 @@ public class Game_panel extends JPanel implements Runnable, KeyListener, ActionL
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		
-		if(isStarted()&& e.getSource().equals(timer)) {
+
+		if (isStarted() && e.getSource().equals(timer)) {
 			createRocket();
 		}
 	}
