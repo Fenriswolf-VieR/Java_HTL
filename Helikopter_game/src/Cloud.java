@@ -28,4 +28,10 @@ public class Cloud extends Sprite {
 		}
 	}
 
+	@Override
+	public boolean collidedWith(Sprite s) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }
