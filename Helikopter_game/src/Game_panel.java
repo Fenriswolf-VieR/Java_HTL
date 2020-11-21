@@ -36,6 +36,9 @@ public class Game_panel extends JPanel implements Runnable, KeyListener, ActionL
 	BufferedImage[] rocket;
 	BufferedImage background;
 	BufferedImage[] explosion;
+	JFrame frame;
+	
+	SoundLib slib;
 
 	Sprite copter;
 	Vector<Sprite> actors;
@@ -46,8 +49,8 @@ public class Game_panel extends JPanel implements Runnable, KeyListener, ActionL
 
 	public Game_panel(int w, int h) {
 		this.setPreferredSize(new Dimension(w, h));
-		this.setBackground(Color.cyan);
-		JFrame frame = new JFrame("The Heli-game");
+		//this.setBackground(Color.cyan);
+		frame = new JFrame("The Heli-game");
 		frame.setLocation(100, 100);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.addKeyListener(this);
@@ -70,8 +73,18 @@ public class Game_panel extends JPanel implements Runnable, KeyListener, ActionL
 		BufferedImage[] heli = this.loadPics("pics/heli.gif", 4);
 		rocket = loadPics("pics/rocket.gif", 8);
 		background = loadPics("pics/background.jpg", 1)[0];
+		explosion = loadPics("pics/explosion.gif",5);
 		copter = new Heli(heli, 400, 300, 100, this);
 		actors.add(copter);
+		
+		slib = new SoundLib();
+		slib.loadSound("bumm", "sound/boom.wav");
+		slib.loadSound("rocket", "sound/rocket_start.wav");
+		slib.loadSound("heli", "sound/heli.wav");
+		
+		if(isStarted()) {
+			slib.loopSound("heli");
+		}
 
 		createClouds();
 
@@ -97,7 +110,7 @@ public class Game_panel extends JPanel implements Runnable, KeyListener, ActionL
 	
 	public void run() {
 
-		while (game_running) {
+		while (frame.isVisible()) {
 
 			computeDelta();
 
@@ -115,6 +128,13 @@ public class Game_panel extends JPanel implements Runnable, KeyListener, ActionL
 			}
 
 		}
+		System.exit(0);
+	}
+	
+	public void createExplosion (int x, int y) {
+		Explosion ex = new Explosion(explosion,x,y,100,this);
+		actors.add(ex);
+		slib.playSound("bumm");
 	}
 
 	private void createClouds() {
@@ -208,6 +228,7 @@ public class Game_panel extends JPanel implements Runnable, KeyListener, ActionL
 	
 	private void stopGame() {
 		timer.stop();
+		slib.stopLoopingSound();
 		setStarted(false);
 	}
 
@@ -265,6 +286,7 @@ public class Game_panel extends JPanel implements Runnable, KeyListener, ActionL
 		if (e.getKeyCode() == KeyEvent.VK_ENTER) {
 			if (!isStarted()) {
 				doInitializations();
+				slib.loopSound("heli");
 				setStarted(true);
 			}
 		}
@@ -303,6 +325,7 @@ public class Game_panel extends JPanel implements Runnable, KeyListener, ActionL
 			rock.setHorizontalSpeed(-200);
 		}
 		actors.add(rock);
+		slib.playSound("rocket");
 	}
 
 	public boolean isStarted() {
