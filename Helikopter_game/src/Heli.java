@@ -43,14 +43,14 @@ public class Heli extends Sprite {
 			
 			if(s instanceof Rocket) {
 				parent.createExplosion((int)getX(), (int)getY());
-				parent.createExplosion((int)s.getX(), (int)getY());
+				parent.createExplosion((int)s.getX(), (int)s.getY());
 				remove = true;
 				s.remove = true;
 			}
 			
 			if(s instanceof Heli) {
 				parent.createExplosion((int)getX(), (int)getY());
-				parent.createExplosion((int)s.getX(), (int)getY());
+				parent.createExplosion((int)s.getX(), (int)s.getY());
 				remove = true;
 				s.remove = true;
 			}

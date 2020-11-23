@@ -47,7 +47,7 @@ public class Game_panel extends JPanel implements Runnable, KeyListener, ActionL
 		new Game_panel(1920, 1080);
 	}
 
-	private boolean fullscreen = false;
+	private boolean fullscreen = true;
 
 	public Game_panel(int w, int h) {
 		this.setPreferredSize(new Dimension(w, h));
