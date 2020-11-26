@@ -99,9 +99,12 @@ public class Game_panel extends JPanel implements Runnable, KeyListener, ActionL
 		timer.restart();
 
 		if (!once) {
+			once = true;
 			Thread t = new Thread(this);
 			t.start();
 		}
+		started = true;
+		slib.loopSound("heli");
 	}
 
 	private ActionListener fpsTimer = new ActionListener() {
@@ -295,6 +298,7 @@ public class Game_panel extends JPanel implements Runnable, KeyListener, ActionL
 				doInitializations();
 				slib.loopSound("heli");
 				setStarted(true);
+				gameover = 0;
 			}
 		}
 

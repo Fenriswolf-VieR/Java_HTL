@@ -7,7 +7,7 @@ public class Cloud extends Sprite {
 	public Cloud(BufferedImage[] i, double x, double y, long delay, Game_panel p) {
 		super(i,x,y,delay,p);
 		
-		if((int)(Math.random()*2)>1) {
+		if((int)(Math.random()*100)>50) {
 			setDx(-speed);
 		}else {
 			setDx(speed);

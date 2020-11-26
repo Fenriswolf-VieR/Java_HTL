@@ -36,7 +36,8 @@ public class Heli extends Sprite {
 		if(remove) {
 			return false;
 		}
-		if(this.intersects(s)) {
+		if(this.checkOpaqueColorCollisions(s)) {
+		//if(this.intersects(s)) {
 			if(remove) {
 				parent.gameover = System.currentTimeMillis();
 			}
@@ -46,6 +47,8 @@ public class Heli extends Sprite {
 				parent.createExplosion((int)s.getX(), (int)s.getY());
 				remove = true;
 				s.remove = true;
+				parent.gameover = 1;
+				parent.setStarted(false);
 			}
 			
 			if(s instanceof Heli) {

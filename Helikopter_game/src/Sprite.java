@@ -56,7 +56,7 @@ public abstract class Sprite extends Rectangle2D.Double implements Drawable, Mov
 		Rectangle2D.Double sub_him = getSubRec(s,cut);
 
 		BufferedImage img_me = pics[currentpic].getSubimage((int)sub_me.x,(int) sub_me.y, (int)sub_me.width,(int)sub_me.height);
-		BufferedImage img_him = pics[currentpic].getSubimage((int)sub_him.x,(int) sub_him.y, (int)sub_him.width,(int)sub_him.height);
+		BufferedImage img_him = s.pics[s.currentpic].getSubimage((int)sub_him.x,(int) sub_him.y, (int)sub_him.width,(int)sub_him.height);
 
 		for(int i=0;i<img_me.getWidth();i++) {
 			for(int n=0;n<img_him.getHeight();n++) {

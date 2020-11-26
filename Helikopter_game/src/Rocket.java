@@ -66,7 +66,7 @@ public class Rocket extends Sprite{
 			return false;
 		}
 		
-		if(this.intersects(s)) {
+		if(this.checkOpaqueColorCollisions(s)) {
 			if(s instanceof Heli) {
 				parent.createExplosion((int)getX(), (int)getY());
 				parent.createExplosion((int)s.getX(), (int)s.getY());
