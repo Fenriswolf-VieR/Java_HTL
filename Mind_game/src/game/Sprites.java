@@ -1,7 +1,6 @@
 package game;
 import java.awt.Graphics;
 import java.awt.geom.Rectangle2D;
-import java.awt.geom.Rectangle2D.Double;
 import java.awt.image.BufferedImage;
 
 public abstract class Sprites extends Rectangle2D.Double implements Drawing, Moving {
@@ -30,8 +29,17 @@ public abstract class Sprites extends Rectangle2D.Double implements Drawing, Mov
 
 	}
 	
-	public void setAnimation(BufferedImage[]i) {
+	public void setAnimation(BufferedImage[]i, boolean back) {
 		pics = i;
+		if(back) {
+			loop_to= pics.length-1;
+			loop_from = 0;
+			currentpic= pics.length-1;
+		}else {
+			loop_from = 0;
+			loop_to = pics.length-1;
+			currentpic= 0;
+		}
 	}
 
 	@Override
@@ -119,6 +127,10 @@ public abstract class Sprites extends Rectangle2D.Double implements Drawing, Mov
 		}
 		return true;
 	}
+	
+	public int getDamage(Hybrid_enemies s) {
+		return s.damage;
+	}
 
 	public double getDx() {
 		return dx;
@@ -149,21 +161,33 @@ public abstract class Sprites extends Rectangle2D.Double implements Drawing, Mov
 		double xm = dx+speedx;
 		double ym = dy+speedy;
 		
-		if(speedx == -parent.speed*2 && speedx == parent.speed*2) {
+		//System.out.println(speedx+" "+parent.speed);
+		//System.out.println(speedy+" "+parent.speed);
+		
+		if(parent.stuck_left||parent.stuck_right) {
+			//System.out.println("xm=0");
 			xm = 0;
 		}
 		
-		if(speedy == -parent.speed*2 && speedy == parent.speed*2) {
+		if(parent.stuck_up||parent.stuck_down) {
+			//System.out.println("ym=0");
 			ym = 0;
 		}
 
 		if(xm!=0) {
+			//System.out.println(xm);
 			x += xm*(delta/1e9);
 		}
 
 		if(ym!=0) {
+			//System.out.println(ym);
 			y += ym*(delta/1e9);
 		}
+	}
+	
+	public void free(int pixel_x, int pixel_y) {
+		x+=pixel_x;
+		y+=pixel_y;
 	}
 
 	private void computeAnimation() {

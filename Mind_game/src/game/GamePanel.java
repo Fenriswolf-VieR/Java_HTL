@@ -1,6 +1,7 @@
 package game;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
@@ -10,6 +11,7 @@ import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
+import java.text.Format;
 import java.util.Vector;
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
@@ -22,12 +24,25 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 	boolean game_running = true;
 	boolean started = false;
 	boolean once = false;
+	private boolean fullscreen = true;
 
 	long delta = 0;
 	long last = 0;
 	long fps = 0;
+	long frames = 0;
+	//double winkle = 0;
 	long time = 0;
+	long points = 0;
 	long gameover = 0;
+	int game_state = 3; //0 = not dead, 1 = dead, 2 = won
+	int walls_vertical_destroyed = 0;
+	int walls_horizontal_destroyed = 0;
+	boolean walls_vert_triggered = false;
+	boolean walls_horizon_triggered = false;
+	boolean stuck_up = false;
+	boolean stuck_down = false;
+	boolean stuck_left = false;
+	boolean stuck_right = false;
 
 	boolean up = false;
 	boolean down = false;
@@ -39,17 +54,39 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 	int fictx = 0;
 	int ficty = 0;
 	int speed = 700;
+	int health = 100;
+	int stamina = 100;
+	//int speed = 350;
 
 	Timer timer;
 	BufferedImage[] angel;
 	BufferedImage[] angel_back;
+	BufferedImage[] angel_fight1;
+	BufferedImage[] angel_fight1_back;
 	BufferedImage background;
+	BufferedImage start_screen;
+	BufferedImage victory_screen;
+	BufferedImage defeat_screen;
 	BufferedImage[] explosion;
 	BufferedImage[] c1;
 	BufferedImage[] c2;
 	BufferedImage[] c3;
 	BufferedImage[] c4;
 	BufferedImage[] c5;
+	BufferedImage[] wall_v;
+	BufferedImage[] wall_h;
+	BufferedImage[] small_black_back;
+	BufferedImage[] small_black;
+	BufferedImage[] big_black_back;
+	BufferedImage[] big_black;
+	BufferedImage[] big_orange_back;
+	BufferedImage[] big_orange;
+	BufferedImage[] big_yellow_back;
+	BufferedImage[] big_yellow;
+	BufferedImage[] old_green_back;
+	BufferedImage[] old_green;
+	BufferedImage[] violett_butterfly_back;
+	BufferedImage[] violett_butterfly;
 
 	JFrame frame;
 
@@ -62,8 +99,6 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 	public static void main(String[] args) {
 		new GamePanel(1920, 1080);
 	}
-
-	private boolean fullscreen = true ;
 
 	public GamePanel(int w, int h) {
 		this.setPreferredSize(new Dimension(w, h));
@@ -94,7 +129,10 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 
 		actors = new Vector<Sprites>();
 		actors2 =  new Vector<Sprites>();
-		//angel = this.loadPics("pics/angel_animations1.png", 9);
+		angel_fight1 = this.loadPics("pics/angel_fight1.png", 16);
+		//angel_fight1 = this.loadPics("pics/angel.png", 12);
+		//angel = this.loadPics("pics/angel_fight1.png", 16);
+		angel_fight1_back = this.loadPics("pics/angel_fight1_back.png", 16);
 		angel = this.loadPics("pics/angel.png", 12);
 		angel_back = this.loadPics("pics/angel_back.png", 12);
 		c1 = this.loadPics("pics/clouds1.png", 1);
@@ -102,16 +140,36 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 		c3 = this.loadPics("pics/clouds4.png", 1);
 		c4 = this.loadPics("pics/clouds5.png", 1);
 		c5 = this.loadPics("pics/clouds6.png", 1);
-		//rocket = loadPics("pics/rocket.gif", 8);
-		background = loadPics("pics/night_sky_background.png", 1)[0];
-		/*explosion = loadPics("pics/explosion.gif",5);*/
+		wall_v = this.loadPics("pics/wall2.png", 1);
+		wall_h = this.loadPics("pics/wall.png", 1);
+		small_black_back = this.loadPics("pics/small_flying_black_dragon_back.png", 12);
+		small_black= this.loadPics("pics/small_flying_black_dragon.png", 12);
+		big_black_back= this.loadPics("pics/big_flying_black_dragon_back.png", 11);
+		big_black= this.loadPics("pics/big_flying_black_dragon.png", 11);
+		big_orange_back=this.loadPics("pics/big_orange_dragon_back.png", 20);
+		big_orange=this.loadPics("pics/big_orange_dragon.png", 20);
+		big_yellow_back=this.loadPics("pics/big_yellow_dragon_back.png", 20);
+		big_yellow=this.loadPics("pics/big_yellow_dragon.png", 20);
+		old_green_back=this.loadPics("pics/old_green_dragon_back.png", 58);
+		old_green=this.loadPics("pics/old_green_dragon.png", 58);
+		violett_butterfly_back=this.loadPics("pics/violett_butterfly_dragon_back.png", 20);
+		violett_butterfly=this.loadPics("pics/violett_butterfly_dragon.png", 20);
+		//background = loadPics("pics/night_sky_background.png", 1)[0];
+		victory_screen= loadPics("pics/victory_screen.png", 1)[0];
+		defeat_screen = loadPics("pics/defeat_screen.png", 1)[0];
+		start_screen = loadPics("pics/start_screen.png", 1)[0];
 		player = new Angel(angel, (this.getWidth()-angel[0].getWidth())/2, (this.getHeight()-angel[0].getHeight())/2, 100, this);
 		//player = new Angel(angel, 0,0, 100, this);
 		actors.add(player);
 
-		createClouds();
+		create_Temple();
+		//createClouds(); //12 per summon
+		create_Walls(1,getHeight()); //8 per summon
+		create_Walls(2,0); //5 per summon
+		create_Dragon();
 
-		timer = new Timer(1000, spawnTimer);
+
+		timer = new Timer(1000, pointsTimer);
 		//timer.restart();
 
 		if (!once) {
@@ -143,6 +201,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 				checkKeys();
 				doLogic();
 				moveObjects();
+				check_health();
 			}
 
 			paintImmediately(this.getBounds());;
@@ -156,8 +215,8 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 		System.exit(0);
 	}
 
-	private void createClouds() {
-		for (int y = -(getHeight()/4); y <= getHeight(); y += (getHeight()/4)) {
+	private void createClouds() { //12 clouds per spawn
+		for (int y = -(getHeight()/10); y <= getHeight(); y += (getHeight()/10)) {
 			int x = (int) ((Math.random() * getWidth())-(Math.random()*getWidth()/2));
 			create_Cloud(x,y);
 		}
@@ -186,6 +245,166 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 		}
 
 	}
+
+	private void create_Temple(){
+		BufferedImage[] temple = this.loadPics("pics/temple.png", 1);
+		Temple temple_1 = new Temple(temple, getWidth()-300, getHeight()-300, 1000, this);
+		actors2.add(temple_1);
+	}
+
+	private void create_Dragon() {
+		boolean successful = false;
+		BufferedImage[] image = null;
+		Hybrid_enemies Dragon = null;
+		do {
+			double melee = Math.random()*100;
+			//double range = Math.random()*100;
+			double range = 100;
+			double homme = Math.random()*100;
+			double version = Math.random()*100;
+			boolean home = false;
+			double y = Math.random()*getHeight();
+			double x = Math.random()*100;
+			if(x<=50) {
+				x=0;
+			}else {
+				x=getWidth();
+			}
+			if(homme<=50) {
+				home = true;
+			}
+			/*if(range <= 50 && melee<= 50) {
+				Hybrid_enemies Dragon = new Hybrid_enemies(image, x, y, 100, this, home, true, true);
+			}else */if(range <= 50) {
+				if(version<=33) {
+					image = big_black;
+					successful = true;
+				}else if(version<=66) {
+					image = old_green;
+					successful = true;
+				}else {
+					image = violett_butterfly;
+					successful = true;
+				}
+				Dragon = new Hybrid_enemies(image, x, y, 100, this, home, true, false);
+			}else if(melee <= 50) {
+				if(version<=33) {
+					image = big_yellow;
+					successful = true;
+				}else if(version<=66) {
+					image = big_orange;
+					successful = true;
+				}else {
+					image = small_black;
+					successful = true;
+				}
+				Dragon = new Hybrid_enemies(image, x, y, 100, this, home, false, true);
+			}
+		}while(!successful);
+		actors2.add(Dragon);
+	}
+
+	//5 for vertical and 8 for horizontal
+	private void create_Walls() {
+		double direction = Math.random()*100;
+		double place = 0;
+		if(direction <= 50) {
+			do{
+				place = Math.random()*getHeight();
+			}while (place>=player.y-150 && place<=player.y+300);
+			for(int i = 0; i <= getWidth(); i= i+260) {
+				create_Wall(1,i,place);
+			}
+		}else{
+			do{
+				place = Math.random()*getWidth();
+			}while (place>=player.x-150 && place<=player.x+300);
+			for(int i = 0; i <= getHeight(); i= i+260) {
+				create_Wall(2,place,i);
+			}
+		}
+	}
+
+	/*private void create_Walls(int direction) {
+		double place = 0;
+		if(direction == 1) { //horizontal
+			do{
+				place = Math.random()*getHeight();
+			}while (place>=player.y-150 && place<=player.y+300);
+
+			for(int i = 0; i <= getWidth(); i= i+260) {
+				create_Wall(direction,i,place);
+			}
+		}else if(direction == 2) { //vertical
+			do{
+				place = Math.random()*getWidth();
+			}while (place>=player.x-150 && place<=player.x+300);
+
+			for(int i = 0; i <= getHeight(); i= i+260) {
+				create_Wall(direction,place,i);
+			}
+		}
+	}*/
+
+	private void create_Walls(int direction,double x_y) {
+		if(direction == 1) {
+			for(int i = 0; i <= getWidth(); i= i+260) {
+				create_Wall(direction,i,x_y);
+			}
+		}else if(direction == 2) {
+			for(int i = 0; i <= getHeight(); i= i+260) {
+				create_Wall(direction,x_y,i);
+			}
+		}
+	}
+
+	private void create_Wall(int direction, double x, double y){
+		BufferedImage[] wall = null;
+		if(direction ==1) {
+			wall = wall_h;
+		}else if(direction ==2) {
+			wall = wall_v;
+		}
+		Wall wall_1 = new Wall(wall, x, y, 1000, this);
+		actors2.add(wall_1);
+	}
+
+	public void wall_destroyed(Wall s) {
+		if (s.pics == wall_h) {
+			walls_horizontal_destroyed ++;
+			if(walls_horizontal_destroyed<=8 && !walls_horizon_triggered) {
+				double random = Math.random()*100;
+				double chance = (1/(9-walls_horizontal_destroyed))*100;
+				if(random<=chance) {
+					create_Walls();
+					walls_horizon_triggered = true;
+				}
+
+			}
+			if(walls_horizontal_destroyed ==8) {
+				walls_horizontal_destroyed = 0;
+				walls_horizon_triggered = false;
+			}
+		}else if(s.pics== wall_v) {
+			walls_vertical_destroyed ++;
+			if(walls_vertical_destroyed<=5 && !walls_vert_triggered) {
+				double random = Math.random()*100;
+				double chance = (1/(6-walls_vertical_destroyed))*100;
+				if(random<=chance) {
+					create_Walls();
+					walls_vert_triggered = true;
+				}
+
+			}
+			if(walls_vertical_destroyed==5) {
+				walls_vertical_destroyed = 0;
+				walls_vert_triggered = false;
+			}
+		}else {
+			System.out.println("wall had neither of the two animations");
+		}
+	}
+
 
 	private BufferedImage[] loadPics(String path, int pics) {
 
@@ -244,7 +463,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 				trash.add(check);
 			}
 		}
-		// System.out.println(actors.size());
+		//System.out.println(actors.size());
 
 		for(int i = 0;i < actors.size();i++) {
 			for(int n = i+1; n<actors.size();n++) {
@@ -254,6 +473,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 				s1.collidedWith(s2);
 			}
 		}
+
 		if (trash.size() > 0) {
 			actors.removeAll(trash);
 			actors2.removeAll(trash);
@@ -265,7 +485,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 		actors2.clear();
 
 		if(gameover>0) {
-			if(System.currentTimeMillis()-gameover>3000) {
+			if(System.currentTimeMillis()-gameover>1000) {
 				stopGame();
 			}
 		}
@@ -281,6 +501,30 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 	private void moveObjects() {
 		for (Moving mov : actors) {
 			mov.move(delta,speedx,speedy);
+		}
+
+		if (stuck_left) {
+			for (Sprites mov : actors) {
+				mov.free(-5, 0);
+				stuck_left=false;
+			}
+		}else if (stuck_right) {
+			for (Sprites mov : actors) {
+				mov.free(5, 0);
+				stuck_right=false;
+			}
+		}
+		
+		if (stuck_up) {
+			for (Sprites mov : actors) {
+				mov.free(0, -5);
+				stuck_up=false;
+			}
+		}else if (stuck_down) {
+			for (Sprites mov : actors) {
+				mov.free(0, 5);
+				stuck_down=false;
+			}
 		}
 	}
 
@@ -299,27 +543,49 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 	public int getSpeedy() {
 		return speedy;
 	}
+	
+	public void check_health() {
+		if (health<=0) {
+			//health = 0;
+			game_state = 1;
+			stopGame();
+		}
+	}
 
 	public void keyPressed(KeyEvent e) {
 
-		if (e.getKeyCode() == KeyEvent.VK_UP || e.getKeyCode() == KeyEvent.VK_W) {
-			up = true;
-		}
+		//System.out.println(player);
+		if(!isStarted()) {
+			return;
+		}else {
+			if(player.pics == angel_fight1 || player.pics == angel_fight1_back) {
+				return;
+			}else {
 
-		if (e.getKeyCode() == KeyEvent.VK_LEFT || e.getKeyCode() == KeyEvent.VK_A) {
-			left = true;
-			back = true;
-			player.setAnimation(angel_back);
-		}
+				if (e.getKeyCode() == KeyEvent.VK_UP || e.getKeyCode() == KeyEvent.VK_W) {
+					up = true;
+				}
 
-		if (e.getKeyCode() == KeyEvent.VK_DOWN || e.getKeyCode() == KeyEvent.VK_S) {
-			down = true;
-		}
+				if (e.getKeyCode() == KeyEvent.VK_LEFT || e.getKeyCode() == KeyEvent.VK_A) {
+					left = true;
+					if(back == false) {
+						back = true;
+						player.setAnimation(angel_back,true);
+					}
+				}
 
-		if (e.getKeyCode() == KeyEvent.VK_RIGHT || e.getKeyCode() == KeyEvent.VK_D) {
-			right = true;
-			back = false;
-			player.setAnimation(angel);
+				if (e.getKeyCode() == KeyEvent.VK_DOWN || e.getKeyCode() == KeyEvent.VK_S) {
+					down = true;
+				}
+
+				if (e.getKeyCode() == KeyEvent.VK_RIGHT || e.getKeyCode() == KeyEvent.VK_D) {
+					right = true;
+					if(back==true) {
+						back = false;
+						player.setAnimation(angel,false);
+					}
+				}
+			}
 		}
 	}
 
@@ -341,10 +607,27 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 			right = false;
 		}
 
+		if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+			if(player.pics==angel_fight1 || player.pics == angel_fight1_back) {
+				return;
+			}else {
+				speed=0;
+				if (back == true) {
+					player.setAnimation(angel_fight1_back,true);
+				}else {
+					player.setAnimation(angel_fight1,false);
+				}
+			}
+		}
+
 		if (e.getKeyCode() == KeyEvent.VK_ENTER) {
 			if (!isStarted()) {
 				doInitializations();
 				timer.restart();
+				gameover = 0;
+				points = 0;
+				game_state = 0;
+				health = 100;
 				//slib.loopSound("heli");
 				setStarted(true);
 			}
@@ -352,6 +635,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 
 		if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
 			if (isStarted()) {
+				game_state = 3;
 				stopGame();
 			} else {
 				setStarted(false);
@@ -365,6 +649,34 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 
 	}
 
+	public BufferedImage[] get_oposite(BufferedImage[] i) {
+		if(i == small_black_back) {
+			return small_black;
+		}else if( i == small_black) {
+			return small_black_back;
+		}else if(i == big_black_back) {
+			return big_black;
+		}else if(i == big_black) {
+			return big_black_back;
+		}else if(i == big_yellow) {
+			return big_yellow_back;
+		}else if(i == big_yellow_back) {
+			return big_yellow;
+		}else if(i == big_orange) {
+			return big_orange_back;
+		}else if(i == big_orange_back) {
+			return big_orange;
+		}else if(i == old_green_back) {
+			return old_green;
+		}else if(i == old_green) {
+			return old_green_back;
+		}else if(i == violett_butterfly) {
+			return violett_butterfly_back;
+		}else if(i == violett_butterfly_back) {
+			return violett_butterfly;
+		}
+		return i;
+	}
 
 
 	public boolean isStarted() {
@@ -374,9 +686,6 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 	public void setStarted(boolean started) {
 		this.started = started;
 	}
-
-	long frames = 0;
-	//double winkle = 0;
 
 	@Override
 	public void paintComponent(Graphics g) {
@@ -389,15 +698,30 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 
 		frames++;
 		g2.drawImage(background, 0, 0, getWidth(), getHeight(), this);
-
-		g2.setColor(Color.red);
+		g2.setColor(Color.RED);
 		g2.drawString("FPS: " + Long.toString(fps), 20, 10);
-		g2.drawString("Points: " + Long.toString(time), getWidth()-60, 10);
+		g2.drawString("Time: " + Long.toString(time)+" sec", getWidth()-6*(Long.toString(time).length())-70, 10);
+		g2.drawString("Points: " + Long.toString(points), getWidth()-6*(Long.toString(points).length())-60, 30);
+		g2.drawString("Health: " + Long.toString(health), getWidth()-6*(Long.toString(health).length())-70, 50);
+		g2.drawString("Stamina: " + Long.toString(stamina), getWidth()-6*(Long.toString(stamina).length())-70, 70);
+		Font stringFont = new Font( "SansSerif", Font.PLAIN, 100 );
+		if(game_state ==1) {
+			g2.drawImage(defeat_screen, 0, 0, getWidth(), getHeight(), this);
+			g2.setColor(Color.BLUE);
+			g2.setFont(stringFont);
+			g2.drawString(Long.toString(points)+" Points",900,675);
+		}else if(game_state ==2) {
+			g2.drawImage(victory_screen, 0, 0, getWidth(), getHeight(), this);
+			g2.setColor(Color.BLUE);
+			g2.setFont(stringFont);
+			g2.drawString(Long.toString(points)+" Points",900,675);
+		}else if(game_state ==3) {
+			g2.drawImage(start_screen, 0, 0, getWidth(), getHeight(), this);
+		}
 
 		if (!isStarted()) {
 			return;
 		}
-
 		if (actors != null) {
 			for (Drawing draw : actors) {
 				draw.drawObjects(g2);
@@ -405,12 +729,16 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 		}
 	}
 
-	private ActionListener spawnTimer = new ActionListener() {
+	private ActionListener pointsTimer = new ActionListener() {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			time++;
-
+			points++;
+			if(stamina <100) {
+				stamina++;
+			}
 		}
 	};
+
 }

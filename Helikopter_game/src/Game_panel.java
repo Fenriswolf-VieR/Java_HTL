@@ -331,9 +331,9 @@ public class Game_panel extends JPanel implements Runnable, KeyListener, ActionL
 
 		Rocket rock = new Rocket(rocket, x, y, 100, this);
 		if (x < 0) {
-			rock.setHorizontalSpeed(200);
+			rock.setHorizontalSpeed(2000);
 		} else {
-			rock.setHorizontalSpeed(-200);
+			rock.setHorizontalSpeed(-2000);
 		}
 		actors.add(rock);
 		slib.playSound("rocket");
