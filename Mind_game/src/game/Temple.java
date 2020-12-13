@@ -14,12 +14,12 @@ public class Temple extends Sprites{
 		if(remove) {
 			return false;
 		}
-		
+		//System.out.println("Copyright by René Viehhauser);
 		if(this.checkOpaqueColorCollisions(s)) {
 			if(s instanceof Angel) {
 				//remove = true;
 				//s.remove = true;
-				parent.points = parent.points +1000000000;
+				parent.points = parent.points +1000;
 				parent.gameover=1;
 				parent.game_state = 2;
 			}

@@ -13,27 +13,11 @@ public class Wall extends Sprites{
 		if(remove) {
 			return false;
 		}
+		//System.out.println("Copyright by René Viehhauser);
 		if(this.intersects(s)) {
 			if(s instanceof Angel){
-				if (parent.up) {
-					parent.speedy=parent.speed*2;
-					parent.stuck_up=true;
-				}
-
-				if (parent.down) {
-					parent.speedy=-parent.speed*2;
-					parent.stuck_down=true;
-				}
-
-				if (parent.right) {
-					parent.speedx=-parent.speed*2;
-					parent.stuck_down=true;
-				}
-
-				if (parent.left) {
-					parent.speedx=parent.speed*2;
-					parent.stuck_left=true;
-				}
+				
+				parent.free_angel(this);
 				return true;
 			}
 			
@@ -49,23 +33,6 @@ public class Wall extends Sprites{
 			}
 		}
 		if(this.checkOpaqueColorCollisions(s)) {
-			/*if(s instanceof Angel){
-				if (parent.up) {
-					parent.speedy=parent.speed*2;
-				}
-
-				if (parent.down) {
-					parent.speedy=-parent.speed*2;
-				}
-
-				if (parent.right) {
-					parent.speedx=-parent.speed*2;
-				}
-
-				if (parent.left) {
-					parent.speedx=parent.speed*2;
-				}
-			}*/
 			return true;
 		}
 		return false;
@@ -75,22 +42,22 @@ public class Wall extends Sprites{
 	public void doLogic(long delta, boolean back) {
 		super.doLogic(delta,false);
 		
-		if((getDx()+this.parent.getSpeedx())>0 && getX()>parent.getWidth()&& pics == parent.wall_h) {
+		if(getX()>parent.getWidth()) {
 			remove = true;
 			parent.wall_destroyed(this);
 		}
 		
-		if((getDx()+this.parent.getSpeedx())<0 && (getX()+getWidth()<0)&& pics == parent.wall_h) {
+		if((getX()+getWidth()<0)) {
 			remove = true;
 			parent.wall_destroyed(this);
 		}
 		
-		if((getDy()+this.parent.getSpeedy())>0 && getY()>parent.getHeight()&& pics == parent.wall_v) {
+		if(getY()>parent.getHeight()) {
 			remove = true;
 			parent.wall_destroyed(this);
 		}
 		
-		if((getDy()+this.parent.getSpeedy())<0 && (getY()+getHeight()<0) && pics == parent.wall_v) {
+		if((getY()+getHeight()<0)) {
 			remove = true;
 			parent.wall_destroyed(this);
 		}

@@ -160,32 +160,18 @@ public abstract class Sprites extends Rectangle2D.Double implements Drawing, Mov
 	public void move(long delta,int speedx,int speedy) {
 		double xm = dx+speedx;
 		double ym = dy+speedy;
-		
-		//System.out.println(speedx+" "+parent.speed);
-		//System.out.println(speedy+" "+parent.speed);
-		
-		if(parent.stuck_left||parent.stuck_right) {
-			//System.out.println("xm=0");
-			xm = 0;
-		}
-		
-		if(parent.stuck_up||parent.stuck_down) {
-			//System.out.println("ym=0");
-			ym = 0;
-		}
 
 		if(xm!=0) {
-			//System.out.println(xm);
 			x += xm*(delta/1e9);
 		}
 
 		if(ym!=0) {
-			//System.out.println(ym);
 			y += ym*(delta/1e9);
 		}
+		//System.out.println("Copyright by René Viehhauser);
 	}
 	
-	public void free(int pixel_x, int pixel_y) {
+	public void free(double pixel_x, double pixel_y) {
 		x+=pixel_x;
 		y+=pixel_y;
 	}

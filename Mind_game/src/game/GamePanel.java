@@ -11,7 +11,6 @@ import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
-import java.text.Format;
 import java.util.Vector;
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
@@ -37,12 +36,10 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 	int game_state = 3; //0 = not dead, 1 = dead, 2 = won
 	int walls_vertical_destroyed = 0;
 	int walls_horizontal_destroyed = 0;
+	boolean dragon_cooldown = false;
 	boolean walls_vert_triggered = false;
 	boolean walls_horizon_triggered = false;
-	boolean stuck_up = false;
-	boolean stuck_down = false;
-	boolean stuck_left = false;
-	boolean stuck_right = false;
+	boolean temple_spawned = false;
 
 	boolean up = false;
 	boolean down = false;
@@ -54,9 +51,9 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 	int fictx = 0;
 	int ficty = 0;
 	int speed = 700;
+	//int speed = 350;
 	int health = 100;
 	int stamina = 100;
-	//int speed = 350;
 
 	Timer timer;
 	BufferedImage[] angel;
@@ -90,7 +87,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 
 	JFrame frame;
 
-	//SoundLib slib;
+	//Sound_library slib;
 
 	Sprites player;
 	Vector<Sprites> actors;
@@ -130,8 +127,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 		actors = new Vector<Sprites>();
 		actors2 =  new Vector<Sprites>();
 		angel_fight1 = this.loadPics("pics/angel_fight1.png", 16);
-		//angel_fight1 = this.loadPics("pics/angel.png", 12);
-		//angel = this.loadPics("pics/angel_fight1.png", 16);
+		//System.out.println("Copyright by René Viehhauser);
 		angel_fight1_back = this.loadPics("pics/angel_fight1_back.png", 16);
 		angel = this.loadPics("pics/angel.png", 12);
 		angel_back = this.loadPics("pics/angel_back.png", 12);
@@ -158,13 +154,13 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 		victory_screen= loadPics("pics/victory_screen.png", 1)[0];
 		defeat_screen = loadPics("pics/defeat_screen.png", 1)[0];
 		start_screen = loadPics("pics/start_screen.png", 1)[0];
-		player = new Angel(angel, (this.getWidth()-angel[0].getWidth())/2, (this.getHeight()-angel[0].getHeight())/2, 100, this);
+		player = new Angel(angel, (this.getWidth()-angel[0].getWidth())/2, (this.getHeight()-angel[0].getHeight())/2, 80, this);
 		//player = new Angel(angel, 0,0, 100, this);
 		actors.add(player);
 
-		create_Temple();
-		//createClouds(); //12 per summon
-		create_Walls(1,getHeight()); //8 per summon
+		//create_Temple();
+		createClouds(); //12 per summon
+		create_Walls(1,getHeight()-wall_h[0].getHeight()); //8 per summon
 		create_Walls(2,0); //5 per summon
 		create_Dragon();
 
@@ -194,14 +190,14 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 	public void run() {
 
 		while (frame.isVisible()) {
-
+			//System.out.println("Copyright by René Viehhauser);
 			computeDelta();
 
 			if (isStarted()) {
 				checkKeys();
 				doLogic();
 				moveObjects();
-				check_health();
+				remove_health(0,player);
 			}
 
 			paintImmediately(this.getBounds());;
@@ -216,13 +212,13 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 	}
 
 	private void createClouds() { //12 clouds per spawn
-		for (int y = -(getHeight()/10); y <= getHeight(); y += (getHeight()/10)) {
+		for (int y = -(getHeight()/10); y <= getHeight(); y += (getHeight()/8)) {
 			int x = (int) ((Math.random() * getWidth())-(Math.random()*getWidth()/2));
 			create_Cloud(x,y);
 		}
 	}
 
-	public void create_Cloud(double x, double y) {
+	private void create_Cloud(double x, double y) {
 		double random = Math.random()*100;
 		BufferedImage[] ci = null;
 		if(random<=20) {
@@ -248,7 +244,21 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 
 	private void create_Temple(){
 		BufferedImage[] temple = this.loadPics("pics/temple.png", 1);
-		Temple temple_1 = new Temple(temple, getWidth()-300, getHeight()-300, 1000, this);
+		Temple temple_1;
+		boolean intersect = true;
+		do {
+			double x = Math.random()*getWidth();
+			double y = Math.random()*getHeight();
+			temple_1 = new Temple(temple, x, y, 1000, this);
+			for(int i = 0;i < actors.size();i++) {
+				if(actors.elementAt(i).intersects(temple_1)) {
+					intersect = true;
+					return;
+				}
+				intersect=false;
+			}
+		}while(intersect);
+		temple_spawned = true;
 		actors2.add(temple_1);
 	}
 
@@ -258,6 +268,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 		Hybrid_enemies Dragon = null;
 		do {
 			double melee = Math.random()*100;
+			//double melee = 100;
 			//double range = Math.random()*100;
 			double range = 100;
 			double homme = Math.random()*100;
@@ -286,7 +297,24 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 					image = violett_butterfly;
 					successful = true;
 				}
-				Dragon = new Hybrid_enemies(image, x, y, 100, this, home, true, false);
+				boolean intersect = true;
+				do {
+					Dragon = new Hybrid_enemies(image, x, y, 100, this, home, true, false);
+					y = Math.random()*getHeight();
+					x = Math.random()*100;
+					if(x<=50) {
+						x=0;
+					}else {
+						x=getWidth();
+					}
+					for(int i = 0;i < actors.size();i++) {
+						if(actors.elementAt(i).intersects(Dragon)) {
+							intersect = true;
+							return;
+						}
+						intersect=false;
+					}
+				}while(intersect);
 			}else if(melee <= 50) {
 				if(version<=33) {
 					image = big_yellow;
@@ -298,7 +326,24 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 					image = small_black;
 					successful = true;
 				}
-				Dragon = new Hybrid_enemies(image, x, y, 100, this, home, false, true);
+				boolean intersect = true;
+				do {
+					Dragon = new Hybrid_enemies(image, x, y, 100, this, home, false, true);
+					y = Math.random()*getHeight();
+					x = Math.random()*100;
+					if(x<=50) {
+						x=0;
+					}else {
+						x=getWidth();
+					}
+					for(int i = 0;i < actors.size();i++) {
+						if(actors.elementAt(i).intersects(Dragon)) {
+							intersect = true;
+							return;
+						}
+						intersect=false;
+					}
+				}while(intersect);
 			}
 		}while(!successful);
 		actors2.add(Dragon);
@@ -309,23 +354,39 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 		double direction = Math.random()*100;
 		double place = 0;
 		if(direction <= 50) {
+			boolean intersect = true;
 			do{
 				place = Math.random()*getHeight();
-			}while (place>=player.y-150 && place<=player.y+300);
+				for(int i = 0;i < actors.size();i++) {
+					if(actors.elementAt(i).intersects(0, place, getWidth(), wall_h[0].getHeight())) {
+						intersect = true;
+						return;
+					}
+					intersect=false;
+				}
+			}while (intersect);
 			for(int i = 0; i <= getWidth(); i= i+260) {
 				create_Wall(1,i,place);
 			}
 		}else{
+			boolean intersect = true;
 			do{
 				place = Math.random()*getWidth();
-			}while (place>=player.x-150 && place<=player.x+300);
+				for(int i = 0;i < actors.size();i++) {
+					if(actors.elementAt(i).intersects(place, 0, wall_v[0].getWidth(), getHeight())) {
+						intersect = true;
+						return;
+					}
+					intersect=false;
+				}
+			}while (intersect);
 			for(int i = 0; i <= getHeight(); i= i+260) {
 				create_Wall(2,place,i);
 			}
 		}
 	}
 
-	/*private void create_Walls(int direction) {
+	private void create_Walls(int direction) {
 		double place = 0;
 		if(direction == 1) { //horizontal
 			do{
@@ -344,7 +405,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 				create_Wall(direction,place,i);
 			}
 		}
-	}*/
+	}
 
 	private void create_Walls(int direction,double x_y) {
 		if(direction == 1) {
@@ -376,7 +437,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 				double random = Math.random()*100;
 				double chance = (1/(9-walls_horizontal_destroyed))*100;
 				if(random<=chance) {
-					create_Walls();
+					create_something();
 					walls_horizon_triggered = true;
 				}
 
@@ -391,7 +452,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 				double random = Math.random()*100;
 				double chance = (1/(6-walls_vertical_destroyed))*100;
 				if(random<=chance) {
-					create_Walls();
+					create_something();
 					walls_vert_triggered = true;
 				}
 
@@ -405,6 +466,20 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 		}
 	}
 
+	public void create_something() {
+		double random = Math.random()*100;
+		if(random<5 && !temple_spawned) {
+			create_Temple();
+		}else if(random<30) {
+			double x = Math.random()*getWidth();
+			double y = Math.random()*getHeight();
+			create_Cloud(x, y);
+		}else if(random<65) {
+			create_Dragon();
+		}else {
+			create_Walls();
+		}
+	}
 
 	private BufferedImage[] loadPics(String path, int pics) {
 
@@ -484,6 +559,10 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 		actors.addAll(actors2);
 		actors2.clear();
 
+		if(actors.size()<13) {
+			create_something();
+		}
+
 		if(gameover>0) {
 			if(System.currentTimeMillis()-gameover>1000) {
 				stopGame();
@@ -502,38 +581,46 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 		for (Moving mov : actors) {
 			mov.move(delta,speedx,speedy);
 		}
+	}
 
-		if (stuck_left) {
+	public void move_screen(double pix_x, double pix_y) {
+		for (Sprites mov : actors) {
+			mov.free(pix_x, pix_y);
+		}
+	}
+
+
+	public void free_angel(Sprites s) { //1 = left, 2 = right, 3 = up 4=down
+
+		double shift_left =Math.abs(s.x+s.width-player.x);
+		double shift_right=Math.abs(player.x+player.width-s.x);
+		double shift_up = Math.abs(s.y+s.height-player.y);
+		double shift_down = Math.abs(-s.y+player.y+player.height);
+
+		if (min(shift_left,shift_right,shift_up,shift_down)) {
 			for (Sprites mov : actors) {
-				mov.free(-5, 0);
-				stuck_left=false;
+				mov.free(-shift_left, 0);
 			}
-		}else if (stuck_right) {
+		}else if (min(shift_right,shift_left,shift_up,shift_down)) {
 			for (Sprites mov : actors) {
-				mov.free(5, 0);
-				stuck_right=false;
+				mov.free(shift_right, 0);
 			}
 		}
-		
-		if (stuck_up) {
+
+		if (min(shift_up,shift_right,shift_left,shift_down)) {
 			for (Sprites mov : actors) {
-				mov.free(0, -5);
-				stuck_up=false;
+				mov.free(0, -shift_up);
 			}
-		}else if (stuck_down) {
+		}else if (min(shift_down,shift_right,shift_up,shift_left)) {
 			for (Sprites mov : actors) {
-				mov.free(0, 5);
-				stuck_down=false;
+				mov.free(0, shift_down);
 			}
 		}
 	}
 
 	private void computeDelta() {
-		//try {
 		delta = System.nanoTime() - last;
 		last = System.nanoTime();
-		//} catch (ArithmeticException e) {
-		//}
 	}
 
 	public int getSpeedx() {
@@ -543,10 +630,28 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 	public int getSpeedy() {
 		return speedy;
 	}
-	
-	public void check_health() {
+
+	private static boolean min(double val, double... d) {
+
+		for (double v : d) {
+			if (val > v) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	public void remove_health(int damage,Sprites source) {
+		if(source instanceof Hybrid_enemies) {
+			if(dragon_cooldown) {
+				health-=damage;
+				dragon_cooldown=false;
+			}
+		}
+
 		if (health<=0) {
-			//health = 0;
+			health = 0;
 			game_state = 1;
 			stopGame();
 		}
@@ -554,7 +659,6 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 
 	public void keyPressed(KeyEvent e) {
 
-		//System.out.println(player);
 		if(!isStarted()) {
 			return;
 		}else {
@@ -608,10 +712,10 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 		}
 
 		if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-			if(player.pics==angel_fight1 || player.pics == angel_fight1_back) {
+			if(player.pics==angel_fight1 || player.pics == angel_fight1_back || stamina<20) {
 				return;
 			}else {
-				speed=0;
+				stamina -= 20;
 				if (back == true) {
 					player.setAnimation(angel_fight1_back,true);
 				}else {
@@ -628,6 +732,8 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 				points = 0;
 				game_state = 0;
 				health = 100;
+				stamina = 100;
+				temple_spawned = false;
 				//slib.loopSound("heli");
 				setStarted(true);
 			}
@@ -737,6 +843,9 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 			points++;
 			if(stamina <100) {
 				stamina++;
+			}
+			if(!dragon_cooldown) {
+				dragon_cooldown=true;
 			}
 		}
 	};

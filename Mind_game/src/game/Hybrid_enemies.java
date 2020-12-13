@@ -16,7 +16,7 @@ public class Hybrid_enemies extends Sprites {
 		homming = homme;
 		ranged = range;
 		melee = nah;
-		damage = 1;
+		damage = 5;
 		if(pics == parent.small_black_back || pics == parent.big_black_back || pics == parent.small_black || pics == parent.big_black ) {
 			is_black = true;
 			if(x<=parent.player.x) {
@@ -38,6 +38,9 @@ public class Hybrid_enemies extends Sprites {
 
 	@Override
 	public boolean collidedWith(Sprites s) {
+		if(remove) {
+			return false;
+		}
 		if(this.intersects(s)) {
 			if(s instanceof Wall){
 				if (dx!=0) {
@@ -53,8 +56,13 @@ public class Hybrid_enemies extends Sprites {
 		
 		if(this.checkOpaqueColorCollisions(s)) {
 			if(s instanceof Angel){
-				parent.health -= damage;
-				parent.check_health();
+				if(s.pics==parent.angel_fight1 || s.pics==parent.angel_fight1_back) {
+					remove = true;
+					parent.points += 100;
+					parent.create_something();
+				}else {
+					parent.remove_health(damage,this);
+				}
 			}
 			return true;
 		}
@@ -79,7 +87,29 @@ public class Hybrid_enemies extends Sprites {
 		}
 
 		attack();
-
+		//System.out.println("Copyright by René Viehhauser);
+		
+		if(!homming) {
+			if((getDx()+this.parent.getSpeedx())>0 && getX()>parent.getWidth()) {
+				remove = true;
+				parent.create_something();
+			}
+			
+			if((getDx()+this.parent.getSpeedx())<0 && (getX()+getWidth()<0)) {
+				remove = true;
+				parent.create_something();
+			}
+			
+			if((getDy()+this.parent.getSpeedy())>0 && getY()>parent.getHeight()) {
+				remove = true;
+				parent.create_something();
+			}
+			
+			if((getDy()+this.parent.getSpeedy())<0 && (getY()+getHeight()<0)) {
+				remove = true;
+				parent.create_something();
+			}
+		}
 	}
 	
 	public void setDamage(int dam) {
@@ -108,7 +138,7 @@ public class Hybrid_enemies extends Sprites {
 				setDy(-parent.speedy);
 			}else {
 				if(getX()<= parent.player.x) {
-					setDx(2*parent.speed);
+					setDx(1.5*parent.speed);
 					if(is_black) {
 						if(back==false) {
 							back = true;
@@ -121,7 +151,7 @@ public class Hybrid_enemies extends Sprites {
 						}
 					}
 				}else if(getX()>= parent.player.x){
-					setDx(-2*parent.speed);
+					setDx(-1.5*parent.speed);
 					if(is_black) {
 						if(back==true) {
 							back = false;
@@ -136,9 +166,9 @@ public class Hybrid_enemies extends Sprites {
 				}
 
 				if(getY()<= parent.player.y){
-					setDy(2*parent.speed);
+					setDy(1.5*parent.speed);
 				}else if(getY()>= parent.player.y) {
-					setDy(-2*parent.speed);
+					setDy(-1.5*parent.speed);
 				}
 			}
 		}else {
@@ -159,6 +189,46 @@ public class Hybrid_enemies extends Sprites {
 	}
 
 	public void rangedAtack() {
+		if(getX()<= parent.player.x) {
+			if(is_black) {
+				if(back==false) {
+					back = true;
+					setAnimation(parent.get_oposite(pics),true);
+				}
+			}else {
+				if(back==true) {
+					back = false;
+					setAnimation(parent.get_oposite(pics),false);
+				}
+			}
+		}else if(getX()>= parent.player.x){
+			if(is_black) {
+				if(back==true) {
+					back = false;
+					setAnimation(parent.get_oposite(pics),false);
+				}
+			}else {
+				if(back==false) {
+					back = true;
+					setAnimation(parent.get_oposite(pics),true);
+				}
+			}
+		}
+		if(melee) {
+			if(getX()<= parent.player.x) {
+				setDx(0.5*parent.speed);
+			}else if(getX()>= parent.player.x){
+				setDx(-0.5*parent.speed);
+			}
+
+			if(getY()<= parent.player.y){
+				setDy(parent.speed);
+			}else if(getY()>= parent.player.y) {
+				setDy(-parent.speed);
+			}
+		} else {
+				setDx(-parent.speedx);
+		}
 
 	}
 

@@ -23,36 +23,28 @@ public class Cloud extends Sprites {
 		
 		if((getDx()+this.parent.getSpeedx())>0 && getX()>parent.getWidth()) {
 			remove = true;
-			double x = -getWidth();
-			//setX(-getWidth());
-			parent.create_Cloud(x,y);
+			parent.create_something();
 		}
 		
 		if((getDx()+this.parent.getSpeedx())<0 && (getX()+getWidth()<0)) {
 			remove = true;
-			double x = parent.getWidth()+getWidth();
-			//setX(parent.getWidth()+getWidth());
-			parent.create_Cloud(x, y);
+			parent.create_something();
 		}
 		
 		if((getDy()+this.parent.getSpeedy())>0 && getY()>parent.getHeight()) {
 			remove = true;
-			double y = -getHeight();
-			//setY(-getHeight());
-			parent.create_Cloud(x, y);
+			parent.create_something();
 		}
 		
 		if((getDy()+this.parent.getSpeedy())<0 && (getY()+getHeight()<0)) {
 			remove = true;
-			double y = parent.getHeight()+getHeight();
-			//setX(parent.getHeight()+getHeight());
-			parent.create_Cloud(x, y);
+			parent.create_something();
 		}
 	}
 
 	@Override
 	public boolean collidedWith(Sprites s) {
-		// TODO Auto-generated method stub
+		//System.out.println("Copyright by René Viehhauser);
 		return false;
 	}
 
