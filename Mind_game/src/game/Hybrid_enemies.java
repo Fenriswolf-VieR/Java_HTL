@@ -1,6 +1,9 @@
 package game;
 
+
 import java.awt.image.BufferedImage;
+
+import javax.swing.Timer;
 
 public class Hybrid_enemies extends Sprites {
 
@@ -10,6 +13,7 @@ public class Hybrid_enemies extends Sprites {
 	boolean back;
 	boolean is_black;
 	int damage;
+	Timer damage_timer;
 
 	public Hybrid_enemies(BufferedImage[] i, double x, double y, long delay, GamePanel p,boolean homme,boolean range, boolean nah) {
 		super(i, x, y, delay, p);
@@ -249,5 +253,4 @@ public class Hybrid_enemies extends Sprites {
 			currentpic = loop_to;
 		}
 	}
-
 }

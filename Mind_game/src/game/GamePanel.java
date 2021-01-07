@@ -9,8 +9,15 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Vector;
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
@@ -36,7 +43,6 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 	int game_state = 3; //0 = not dead, 1 = dead, 2 = won
 	int walls_vertical_destroyed = 0;
 	int walls_horizontal_destroyed = 0;
-	boolean dragon_cooldown = false;
 	boolean walls_vert_triggered = false;
 	boolean walls_horizon_triggered = false;
 	boolean temple_spawned = false;
@@ -54,6 +60,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 	//int speed = 350;
 	int health = 100;
 	int stamina = 100;
+	int roar_timer = 4;
 
 	Timer timer;
 	BufferedImage[] angel;
@@ -87,7 +94,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 
 	JFrame frame;
 
-	//Sound_library slib;
+	Sound_library slib;
 
 	Sprites player;
 	Vector<Sprites> actors;
@@ -157,12 +164,15 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 		player = new Angel(angel, (this.getWidth()-angel[0].getWidth())/2, (this.getHeight()-angel[0].getHeight())/2, 80, this);
 		//player = new Angel(angel, 0,0, 100, this);
 		actors.add(player);
+		slib = new Sound_library("Dragon-roar-sound.wav", 0.5f);
+
 
 		//create_Temple();
 		createClouds(); //12 per summon
 		create_Walls(1,getHeight()-wall_h[0].getHeight()); //8 per summon
 		create_Walls(2,0); //5 per summon
-		create_Dragon();
+		//create_Dragon();
+		create_something();
 
 
 		timer = new Timer(1000, pointsTimer);
@@ -284,9 +294,9 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 			if(homme<=50) {
 				home = true;
 			}
-			/*if(range <= 50 && melee<= 50) {
-				Hybrid_enemies Dragon = new Hybrid_enemies(image, x, y, 100, this, home, true, true);
-			}else */if(range <= 50) {
+			if(range <= 50 && melee<= 50) {
+				Dragon = new Hybrid_enemies(image, x, y, 100, this, home, true, true);
+			}else if(range <= 50) {
 				if(version<=33) {
 					image = big_black;
 					successful = true;
@@ -347,6 +357,257 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 			}
 		}while(!successful);
 		actors2.add(Dragon);
+		slib.select("Dragon-roar-sound.wav");
+		slib.play();
+	}
+
+	private void create_Dragon(boolean home) {
+		boolean successful = false;
+		BufferedImage[] image = null;
+		Hybrid_enemies Dragon = null;
+		do {
+			double melee = Math.random()*100;
+			//double melee = 100;
+			//double range = Math.random()*100;
+			double range = 100;
+			double version = Math.random()*100;
+			double y = Math.random()*getHeight();
+			double x = Math.random()*100;
+			if(x<=50) {
+				x=0;
+			}else {
+				x=getWidth();
+			}
+			if(range <= 50 && melee<= 50) {
+				Dragon = new Hybrid_enemies(image, x, y, 100, this, home, true, true);
+			}else if(range <= 50) {
+				if(version<=33) {
+					image = big_black;
+					successful = true;
+				}else if(version<=66) {
+					image = old_green;
+					successful = true;
+				}else {
+					image = violett_butterfly;
+					successful = true;
+				}
+				boolean intersect = true;
+				do {
+					Dragon = new Hybrid_enemies(image, x, y, 100, this, home, true, false);
+					y = Math.random()*getHeight();
+					x = Math.random()*100;
+					if(x<=50) {
+						x=0;
+					}else {
+						x=getWidth();
+					}
+					for(int i = 0;i < actors.size();i++) {
+						if(actors.elementAt(i).intersects(Dragon)) {
+							intersect = true;
+							return;
+						}
+						intersect=false;
+					}
+				}while(intersect);
+			}else if(melee <= 50) {
+				if(version<=33) {
+					image = big_yellow;
+					successful = true;
+				}else if(version<=66) {
+					image = big_orange;
+					successful = true;
+				}else {
+					image = small_black;
+					successful = true;
+				}
+				boolean intersect = true;
+				do {
+					Dragon = new Hybrid_enemies(image, x, y, 100, this, home, false, true);
+					y = Math.random()*getHeight();
+					x = Math.random()*100;
+					if(x<=50) {
+						x=0;
+					}else {
+						x=getWidth();
+					}
+					for(int i = 0;i < actors.size();i++) {
+						if(actors.elementAt(i).intersects(Dragon)) {
+							intersect = true;
+							return;
+						}
+						intersect=false;
+					}
+				}while(intersect);
+			}
+		}while(!successful);
+		actors2.add(Dragon);
+		slib.select("Dragon-roar-sound.wav");
+		slib.play();
+	}
+
+	private void create_Dragon(boolean ranged, boolean nah) {
+		boolean successful = false;
+		BufferedImage[] image = null;
+		Hybrid_enemies Dragon = null;
+		do {
+			double homme = Math.random()*100;
+			double version = Math.random()*100;
+			boolean home = false;
+			double y = Math.random()*getHeight();
+			double x = Math.random()*100;
+			if(x<=50) {
+				x=0;
+			}else {
+				x=getWidth();
+			}
+			if(homme<=50) {
+				home = true;
+			}
+			if(ranged && nah) {
+				Dragon = new Hybrid_enemies(image, x, y, 100, this, home, true, true);
+			}else if(ranged) {
+				if(version<=33) {
+					image = big_black;
+					successful = true;
+				}else if(version<=66) {
+					image = old_green;
+					successful = true;
+				}else {
+					image = violett_butterfly;
+					successful = true;
+				}
+				boolean intersect = true;
+				do {
+					Dragon = new Hybrid_enemies(image, x, y, 100, this, home, true, false);
+					y = Math.random()*getHeight();
+					x = Math.random()*100;
+					if(x<=50) {
+						x=0;
+					}else {
+						x=getWidth();
+					}
+					for(int i = 0;i < actors.size();i++) {
+						if(actors.elementAt(i).intersects(Dragon)) {
+							intersect = true;
+							return;
+						}
+						intersect=false;
+					}
+				}while(intersect);
+			}else if(nah) {
+				if(version<=33) {
+					image = big_yellow;
+					successful = true;
+				}else if(version<=66) {
+					image = big_orange;
+					successful = true;
+				}else {
+					image = small_black;
+					successful = true;
+				}
+				boolean intersect = true;
+				do {
+					Dragon = new Hybrid_enemies(image, x, y, 100, this, home, false, true);
+					y = Math.random()*getHeight();
+					x = Math.random()*100;
+					if(x<=50) {
+						x=0;
+					}else {
+						x=getWidth();
+					}
+					for(int i = 0;i < actors.size();i++) {
+						if(actors.elementAt(i).intersects(Dragon)) {
+							intersect = true;
+							return;
+						}
+						intersect=false;
+					}
+				}while(intersect);
+			}
+		}while(!successful);
+		actors2.add(Dragon);
+		slib.select("Dragon-roar-sound.wav");
+		slib.play();
+	}
+
+	private void create_Dragon(boolean ranged, boolean nah, boolean home) {
+		boolean successful = false;
+		BufferedImage[] image = null;
+		Hybrid_enemies Dragon = null;
+		do {
+			double version = Math.random()*100;
+			double y = Math.random()*getHeight();
+			double x = Math.random()*100;
+			if(x<=50) {
+				x=0;
+			}else {
+				x=getWidth();
+			}
+			if(ranged && nah) {
+				Dragon = new Hybrid_enemies(image, x, y, 100, this, home, true, true);
+			}else if(ranged) {
+				if(version<=33) {
+					image = big_black;
+					successful = true;
+				}else if(version<=66) {
+					image = old_green;
+					successful = true;
+				}else {
+					image = violett_butterfly;
+					successful = true;
+				}
+				boolean intersect = true;
+				do {
+					Dragon = new Hybrid_enemies(image, x, y, 100, this, home, true, false);
+					y = Math.random()*getHeight();
+					x = Math.random()*100;
+					if(x<=50) {
+						x=0;
+					}else {
+						x=getWidth();
+					}
+					for(int i = 0;i < actors.size();i++) {
+						if(actors.elementAt(i).intersects(Dragon)) {
+							intersect = true;
+							return;
+						}
+						intersect=false;
+					}
+				}while(intersect);
+			}else if(nah) {
+				if(version<=33) {
+					image = big_yellow;
+					successful = true;
+				}else if(version<=66) {
+					image = big_orange;
+					successful = true;
+				}else {
+					image = small_black;
+					successful = true;
+				}
+				boolean intersect = true;
+				do {
+					Dragon = new Hybrid_enemies(image, x, y, 100, this, home, false, true);
+					y = Math.random()*getHeight();
+					x = Math.random()*100;
+					if(x<=50) {
+						x=0;
+					}else {
+						x=getWidth();
+					}
+					for(int i = 0;i < actors.size();i++) {
+						if(actors.elementAt(i).intersects(Dragon)) {
+							intersect = true;
+							return;
+						}
+						intersect=false;
+					}
+				}while(intersect);
+			}
+		}while(!successful);
+		actors2.add(Dragon);
+		slib.select("Dragon-roar-sound.wav");
+		slib.play();
 	}
 
 	//5 for vertical and 8 for horizontal
@@ -468,14 +729,15 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 
 	public void create_something() {
 		double random = Math.random()*100;
-		if(random<5 && !temple_spawned) {
+		if(random<=3 && !temple_spawned) {
 			create_Temple();
 		}else if(random<30) {
 			double x = Math.random()*getWidth();
 			double y = Math.random()*getHeight();
 			create_Cloud(x, y);
-		}else if(random<65) {
+		}else if(random<65 && roar_timer > 3) {
 			create_Dragon();
+			roar_timer = 0;
 		}else {
 			create_Walls();
 		}
@@ -570,11 +832,48 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 		}
 	}
 
-	private void stopGame() {
-		timer.stop();
-		time = 0;
-		//slib.stopLoopingSound();
-		setStarted(false);
+	private void stopGame(){
+		try {
+			timer.stop();
+			time = 0;
+			slib.stop();
+			setStarted(false);
+			if(game_state==1||game_state==2) {
+				String line;
+				ArrayList<Integer> high_list = new ArrayList<Integer>();
+				try {
+					BufferedReader reader = new BufferedReader(new FileReader("src//highscores.txt"));
+					while ((line=reader.readLine())!=null) {
+						high_list.add(Integer.parseInt(line.split(":")[1].trim()));
+					}
+				reader.close();
+				}catch(FileNotFoundException e) {
+					System.out.println("Highscores not found. Creating highscores");
+				}
+				if(high_list.size()==10) {
+					if(points>high_list.get(high_list.size()-1)) {
+						high_list.remove(high_list.get(high_list.size()-1));
+						high_list.add((int) points);
+					}
+					Collections.sort(high_list, Collections.reverseOrder());
+					BufferedWriter writer = new BufferedWriter(new FileWriter("src//highscores.txt"));
+					for(int i = 0; i<10;i++) {
+						writer.write((i+1)+". : "+high_list.get(i)+"\n");
+					}
+					writer.close();
+				}else {
+					high_list.add((int) points);
+					Collections.sort(high_list, Collections.reverseOrder());
+					BufferedWriter writer = new BufferedWriter(new FileWriter("src//highscores.txt"));
+					for(int i = 0; i<high_list.size();i++) {
+						writer.write((i+1)+". : "+high_list.get(i)+"\n");
+					}
+					writer.close();
+				}
+			}
+		}catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	private void moveObjects() {
@@ -588,8 +887,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 			mov.free(pix_x, pix_y);
 		}
 	}
-
-
+	
 	public void free_angel(Sprites s) { //1 = left, 2 = right, 3 = up 4=down
 
 		double shift_left =Math.abs(s.x+s.width-player.x);
@@ -644,9 +942,9 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 
 	public void remove_health(int damage,Sprites source) {
 		if(source instanceof Hybrid_enemies) {
-			if(dragon_cooldown) {
+			if(source.damage_cooldown) {
 				health-=damage;
-				dragon_cooldown=false;
+				source.damage_cooldown=false;
 			}
 		}
 
@@ -734,6 +1032,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 				health = 100;
 				stamina = 100;
 				temple_spawned = false;
+				roar_timer = 4;
 				//slib.loopSound("heli");
 				setStarted(true);
 			}
@@ -841,11 +1140,16 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 		public void actionPerformed(ActionEvent e) {
 			time++;
 			points++;
+			roar_timer++;
 			if(stamina <100) {
 				stamina++;
 			}
-			if(!dragon_cooldown) {
-				dragon_cooldown=true;
+			for (Sprites mov : actors) {
+				if(mov instanceof Hybrid_enemies) {
+					if(!mov.damage_cooldown) {
+						mov.damage_cooldown=true;
+					}
+				}
 			}
 		}
 	};

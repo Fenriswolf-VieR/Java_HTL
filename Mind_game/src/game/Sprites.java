@@ -3,6 +3,7 @@ import java.awt.Graphics;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 
+
 public abstract class Sprites extends Rectangle2D.Double implements Drawing, Moving {
 
 	long delay;
@@ -15,6 +16,7 @@ public abstract class Sprites extends Rectangle2D.Double implements Drawing, Mov
 	GamePanel parent;
 	BufferedImage[] pics;
 	int currentpic = 0;
+	boolean damage_cooldown;
 
 	public Sprites(BufferedImage[] i, double x, double y, long delay, GamePanel p) {
 		pics = i;
@@ -26,6 +28,7 @@ public abstract class Sprites extends Rectangle2D.Double implements Drawing, Mov
 		parent = p;
 		loop_from = 0;
 		loop_to = pics.length-1;
+		damage_cooldown = false;
 
 	}
 	

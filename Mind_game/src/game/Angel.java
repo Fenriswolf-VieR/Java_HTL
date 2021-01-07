@@ -189,16 +189,18 @@ public class Angel extends Sprites {
 			pixel_y = 0;
 			break;
 		}
-		parent.move_screen(pixel_x,pixel_y);
-
-
+		if(back) {
+			parent.move_screen(-pixel_x,pixel_y);
+		}else {
+			parent.move_screen(pixel_x,pixel_y);
+		}
 	}
 
 	@Override
 	public void drawObjects(Graphics g) {
 		super.drawObjects(g);
-		g.setColor(Color.RED);
-		g.drawRect((int)x, (int)y, (int)width, (int)height);
+		//g.setColor(Color.RED);
+		//g.drawRect((int)x, (int)y, (int)width, (int)height);
 	}
 
 }
